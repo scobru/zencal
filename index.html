@@ -1554,6 +1554,92 @@
       .editor-pane.closed {
         max-width: 100%;
       }
+
+      /* Stacked Header Layout on Mobile */
+      .cal-header {
+        height: auto;
+        padding: 12px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+      .cal-header-left {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .cal-header-right {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        gap: 4px;
+      }
+      .search-box {
+        max-width: 100%;
+        width: 100%;
+        order: 10;
+      }
+      .cal-period-title {
+        font-size: 16px;
+      }
+      .cal-nav-group {
+        gap: 4px;
+      }
+      .cal-nav-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      .view-toggle-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        flex: 1;
+        text-align: center;
+      }
+
+      /* Month Grid cells optimizations */
+      .event-pill span,
+      .event-pill-time {
+        display: none !important;
+      }
+      .event-pill {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        padding: 0 !important;
+        margin: 2px;
+        display: inline-block;
+        border: none !important;
+        min-height: auto;
+      }
+      .month-cell-events {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: center;
+        padding-top: 4px;
+      }
+      .more-events-indicator {
+        display: none !important;
+      }
+      .month-cell-header {
+        justify-content: center;
+      }
+      .month-day-number {
+        font-size: 12px;
+      }
+
+      /* Week Timeline horizontal scrolling */
+      .hour-grid-container {
+        overflow-x: auto;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .allday-row-wrapper,
+      .hourly-view-wrapper {
+        min-width: 800px;
+      }
     }
   </style>
 </head>
