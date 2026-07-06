@@ -1,0 +1,3127 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZenCal | Secure P2P Calendar</title>
+  <meta name="description" content="ZenCal - End-to-End Encrypted Private Calendar by Scobru.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --font-sans: 'Outfit', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-light: rgba(99, 102, 241, 0.08);
+      --badge-zen: #00b4d8;
+    }
+
+    /* Light Theme */
+    [data-theme="light"] {
+      --bg-app: #f4f5f6;
+      --bg-sidebar: #ffffff;
+      --bg-card: #ffffff;
+      --bg-editor: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --text-muted: #9ca3af;
+      --border-color: rgba(0, 0, 0, 0.08);
+      --border-color-hover: rgba(0, 0, 0, 0.16);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+      --input-bg: #f9fafb;
+      --active-bg: #f3f4f6;
+      --grid-line: #e5e7eb;
+    }
+
+    /* Dark Theme */
+    [data-theme="dark"] {
+      --bg-app: #0d0e12;
+      --bg-sidebar: #13151a;
+      --bg-card: #181b22;
+      --bg-editor: #181b22;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-color-hover: rgba(255, 255, 255, 0.15);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+      --input-bg: #111317;
+      --active-bg: #1f232b;
+      --grid-line: #2d3139;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-app);
+      color: var(--text-primary);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ── Dashboard Layout ── */
+    .dashboard-wrapper {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 24px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+
+    .sidebar-logo i {
+      color: var(--accent);
+      font-size: 24px;
+    }
+
+    .hamburger-close {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      margin: 0 20px 16px;
+      background: var(--active-bg);
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .status-indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #e01e37;
+      box-shadow: 0 0 6px #e01e37;
+      display: inline-block;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    .new-event-btn {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 20px 16px;
+      transition: background-color 0.2s, transform 0.2s;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .new-event-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    /* ── Mini Calendar Widget ── */
+    .mini-calendar {
+      padding: 0 20px;
+      margin-bottom: 20px;
+    }
+
+    .mini-cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .mini-cal-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .mini-cal-nav {
+      display: flex;
+      gap: 4px;
+    }
+
+    .mini-cal-nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mini-cal-nav-btn:hover {
+      background: var(--active-bg);
+      color: var(--text-primary);
+    }
+
+    .mini-cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      text-align: center;
+    }
+
+    .mini-cal-day-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 4px 0;
+    }
+
+    .mini-cal-day {
+      font-size: 11px;
+      color: var(--text-secondary);
+      padding: 4px 0;
+      cursor: pointer;
+      border-radius: 50%;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      transition: all 0.2s;
+    }
+
+    .mini-cal-day:hover {
+      background: var(--active-bg);
+      color: var(--text-primary);
+    }
+
+    .mini-cal-day.other-month {
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    .mini-cal-day.today {
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .mini-cal-day.selected {
+      background: var(--accent) !important;
+      color: #ffffff !important;
+      font-weight: 600;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 10px 20px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      margin: 2px 20px;
+      gap: 12px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .nav-item:hover {
+      background: var(--active-bg);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .nav-count {
+      margin-left: auto;
+      font-size: 11px;
+      background: var(--active-bg);
+      color: var(--text-secondary);
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-family: var(--font-mono);
+    }
+
+    .nav-item.active .nav-count {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .categories-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .cat-color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+    }
+
+    .sidebar-action-btn {
+      flex: 1;
+      background: var(--active-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 10px;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-action-btn:hover {
+      background: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    /* ── Main Calendar Pane ── */
+    .calendar-pane {
+      flex: 1;
+      background: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .cal-header {
+      height: 72px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: var(--bg-sidebar);
+      flex-shrink: 0;
+    }
+
+    .cal-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .sidebar-toggle {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .cal-nav-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cal-nav-btn {
+      background: var(--bg-app);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .cal-nav-btn:hover {
+      background: var(--active-bg);
+    }
+
+    .cal-nav-arrow {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cal-period-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      min-width: 150px;
+    }
+
+    .search-box {
+      position: relative;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 16px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--bg-app);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px 12px 8px 36px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+      background: var(--bg-sidebar);
+    }
+
+    .cal-header-right {
+      display: flex;
+      gap: 6px;
+    }
+
+    .view-toggle-btn {
+      background: var(--bg-app);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .view-toggle-btn:hover {
+      background: var(--active-bg);
+      color: var(--text-primary);
+    }
+
+    .view-toggle-btn.active {
+      background: var(--accent-light);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .cal-content {
+      flex: 1;
+      overflow-y: auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Month Grid View ── */
+    .month-grid {
+      display: grid;
+      grid-template-rows: auto repeat(6, 1fr);
+      height: 100%;
+      min-height: 550px;
+      background: var(--bg-card);
+    }
+
+    .month-day-labels {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-sidebar);
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .month-weeks-container {
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      height: 100%;
+    }
+
+    .month-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .month-row:last-child {
+      border-bottom: none;
+    }
+
+    .month-cell {
+      border-right: 1px solid var(--border-color);
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.15s;
+    }
+
+    .month-cell:last-child {
+      border-right: none;
+    }
+
+    .month-cell:hover {
+      background: var(--active-bg);
+    }
+
+    .month-cell-header {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+
+    .month-day-number {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+    }
+
+    .month-cell.today .month-day-number {
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .month-cell.other-month {
+      opacity: 0.4;
+    }
+
+    .month-cell-events {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      overflow-y: hidden;
+      flex: 1;
+    }
+
+    /* Event pill */
+    .event-pill {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .event-pill:hover {
+      filter: brightness(0.95);
+      transform: scale(0.98);
+    }
+
+    .event-pill-time {
+      font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      opacity: 0.8;
+    }
+
+    .more-events-indicator {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding-left: 6px;
+    }
+
+    /* ── Day/Week Hourly Grid Layout ── */
+    .hour-grid-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow-y: auto;
+      position: relative;
+      background: var(--bg-card);
+    }
+
+    /* All-day events row at the top */
+    .allday-row-wrapper {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-sidebar);
+      flex-shrink: 0;
+    }
+
+    .allday-label-col {
+      width: 60px;
+      border-right: 1px solid var(--border-color);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+    }
+
+    .allday-cells-col {
+      flex: 1;
+      display: grid;
+      padding: 6px;
+      gap: 4px;
+      min-height: 40px;
+    }
+
+    .hourly-view-wrapper {
+      display: flex;
+      flex: 1;
+      position: relative;
+    }
+
+    .hour-labels-column {
+      width: 60px;
+      border-right: 1px solid var(--border-color);
+      background: var(--bg-sidebar);
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    .hour-label-cell {
+      height: 60px;
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 8px;
+      padding-top: 4px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    .hour-columns-container {
+      flex: 1;
+      display: grid;
+      position: relative;
+    }
+
+    .hour-column {
+      border-right: 1px solid var(--border-color);
+      position: relative;
+      height: 1440px; /* 24 hours * 60px */
+      cursor: pointer;
+      background: linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 100% 60px;
+    }
+
+    .hour-column:last-child {
+      border-right: none;
+    }
+
+    .hour-column-header {
+      position: sticky;
+      top: 0;
+      background: var(--bg-sidebar);
+      z-index: 10;
+      border-bottom: 1px solid var(--border-color);
+      text-align: center;
+      padding: 10px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .hour-column-dayname {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .hour-column-daynum {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+    }
+
+    .hour-column-header.today .hour-column-daynum {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    /* Positioned event block */
+    .hourly-event-card {
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      box-shadow: var(--shadow-sm);
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+      z-index: 2;
+    }
+
+    .hourly-event-card:hover {
+      filter: brightness(0.95);
+      z-index: 5;
+      box-shadow: var(--shadow-md);
+      transform: scale(0.99);
+    }
+
+    .hourly-event-title {
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hourly-event-time {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      opacity: 0.85;
+    }
+
+    /* ── Agenda View ── */
+    .agenda-view {
+      padding: 24px;
+      background: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .agenda-day-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .agenda-date-header {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 1px dashed var(--border-color);
+      padding-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .agenda-event-row {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .agenda-event-row:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .agenda-event-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .agenda-event-time-pill {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--active-bg);
+      padding: 4px 8px;
+      border-radius: 6px;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .agenda-event-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .agenda-event-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .agenda-event-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      max-width: 400px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .agenda-event-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .agenda-event-cat {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* ── Editor / Viewer Pane ── */
+    .editor-pane {
+      width: 460px;
+      background: var(--bg-editor);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+    }
+
+    .editor-pane.closed {
+      width: 0;
+      border-left: none;
+      transform: translateX(100%);
+    }
+
+    .editor-placeholder-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 40px;
+      color: var(--text-muted);
+      text-align: center;
+      gap: 16px;
+    }
+
+    .placeholder-icon {
+      font-size: 48px;
+      color: var(--border-color-hover);
+    }
+
+    .editor-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 460px;
+    }
+
+    .event-viewer-mode,
+    .event-editor-mode {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .editor-toolbar {
+      height: 72px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: var(--bg-card);
+      flex-shrink: 0;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      background: var(--active-bg);
+      color: var(--text-primary);
+    }
+
+    .viewer-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .viewer-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .category-pill {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .event-time-display {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .event-time-display i {
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    .event-view-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .event-view-body {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-top: 1px dashed var(--border-color);
+      padding-top: 16px;
+    }
+
+    /* ── Form Styles ── */
+    .editor-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 24px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .editor-input-title {
+      flex: 2;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 600;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .editor-input-cat {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      user-select: none;
+      padding: 4px 0;
+    }
+
+    .checkbox-label input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .datetime-inputs-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--active-bg);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .datetime-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .datetime-row label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      width: 40px;
+      text-transform: uppercase;
+    }
+
+    .datetime-inputs {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .datetime-inputs input {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+    }
+
+    .datetime-inputs input[type="date"] {
+      flex: 2;
+    }
+
+    .datetime-inputs input[type="time"] {
+      flex: 1;
+      font-family: var(--font-mono);
+    }
+
+    .editor-textarea {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 16px;
+      border-radius: 10px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.5;
+      resize: none;
+      min-height: 180px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .editor-input-title:focus,
+    .editor-input-cat:focus,
+    .editor-textarea:focus,
+    .datetime-inputs input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-accent:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--active-bg);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+    }
+
+    .btn-danger-text {
+      background: transparent;
+      color: #e01e37;
+    }
+
+    .btn-danger-text:hover {
+      background: rgba(224, 30, 55, 0.08);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      gap: 16px;
+      flex: 1;
+    }
+
+    .empty-icon {
+      font-size: 56px;
+      color: var(--text-muted);
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    /* ── Overlay Backdrops ── */
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+      transition: opacity 0.3s ease;
+    }
+
+    /* ── Login screen ── */
+    .login-screen-wrapper {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-app);
+      padding: 20px;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .login-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 400px;
+      padding: 40px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      left: -60px;
+      width: 120px;
+      height: 120px;
+      background: var(--accent);
+      filter: blur(80px);
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    .login-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: var(--accent-light);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto;
+      box-shadow: 0 8px 16px rgba(99, 102, 241, 0.1);
+    }
+
+    .login-title-group h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .login-title-group p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 16px;
+    }
+
+    .login-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 12px 16px 12px 42px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .login-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+      background: var(--bg-card);
+    }
+
+    .login-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+
+    .login-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-footer-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      border-top: 1px dashed var(--border-color);
+      padding-top: 16px;
+    }
+
+    /* ── Toast Notification ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10000;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Animations */
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .animate-spin {
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+
+    /* ── Responsive breakpoints ── */
+    @media (max-width: 1024px) {
+      .editor-pane {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        max-width: 480px;
+        z-index: 200;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+      }
+
+      .editor-pane.closed {
+        width: 100%;
+        max-width: 480px;
+        transform: translateX(100%);
+        box-shadow: none;
+      }
+
+      .editor-content-wrapper {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.15);
+      }
+
+      .sidebar-toggle {
+        display: block;
+      }
+
+      .hamburger-close {
+        display: block;
+      }
+
+      .editor-pane {
+        max-width: 100%;
+      }
+
+      .editor-pane.closed {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Decryption / Lock Screen -->
+  <div id="login-screen" class="login-screen-wrapper">
+    <div class="login-card">
+      <div class="login-logo">
+        <i class="ti ti-calendar-stats"></i>
+      </div>
+      <div class="login-title-group">
+        <h1>ZenCal</h1>
+        <p>Zero-Knowledge E2E Encrypted Private Calendar.<br>Enter credentials to decrypt your events.</p>
+      </div>
+      <div class="login-form">
+        <div class="input-wrapper">
+          <i class="ti ti-user"></i>
+          <input type="text" id="user-input" placeholder="Username" class="login-input" autocomplete="username">
+        </div>
+        <div class="input-wrapper">
+          <i class="ti ti-key"></i>
+          <input type="password" id="pass-input" placeholder="Password" class="login-input"
+            autocomplete="current-password">
+        </div>
+        <button id="login-btn" class="login-btn">
+          <i class="ti ti-lock-open"></i> Decrypt & Enter
+        </button>
+      </div>
+      <p class="login-footer-desc">
+        <i class="ti ti-info-circle"></i> Decryption keys derived locally in your browser. Master credentials never touch any server.
+      </p>
+    </div>
+  </div>
+
+  <!-- Dashboard App Layout -->
+  <div id="dashboard" class="dashboard-wrapper hidden">
+    <!-- Sidebar Backdrop Overlay on Mobile -->
+    <div id="sidebar-overlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Left Panel -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="ti ti-calendar-stats"></i>
+          <span>ZenCal</span>
+        </div>
+        <button class="hamburger-close" onclick="toggleSidebar()" aria-label="Close menu">
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+
+      <!-- Sync Status Indicator -->
+      <div class="sync-status">
+        <span class="status-indicator-dot" id="status-ping"></span>
+        <span id="status-footer-text">Connecting P2P...</span>
+      </div>
+
+      <!-- Create New Event FAB -->
+      <button class="new-event-btn" onclick="createNewEvent()">
+        <i class="ti ti-plus"></i> Create Event
+      </button>
+
+      <!-- Mini Calendar Widget -->
+      <div class="mini-calendar">
+        <div class="mini-cal-header">
+          <span class="mini-cal-title" id="mini-cal-title">July 2026</span>
+          <div class="mini-cal-nav">
+            <button class="mini-cal-nav-btn" onclick="changeMiniCalMonth(-1)" title="Previous Month">
+              <i class="ti ti-chevron-left"></i>
+            </button>
+            <button class="mini-cal-nav-btn" onclick="changeMiniCalMonth(1)" title="Next Month">
+              <i class="ti ti-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mini-cal-grid" id="mini-cal-grid">
+          <!-- Populated dynamically by renderMiniCalendar() -->
+        </div>
+      </div>
+
+      <!-- Sidebar Navigation / Calendars -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Navigation</div>
+        <a href="#" class="nav-item active" id="nav-all" onclick="setCategoryFilter('all')">
+          <i class="ti ti-calendar-event"></i>
+          <span class="nav-text">All Events</span>
+          <span class="nav-count" id="count-all">0</span>
+        </a>
+
+        <div class="nav-section-title">My Calendars</div>
+        <div id="sidebar-categories" class="categories-list">
+          <!-- Dynamically populated categories -->
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer" style="flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 8px; width: 100%;">
+          <button class="sidebar-action-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+            <i class="ti ti-sun" id="theme-icon"></i>
+            <span>Theme</span>
+          </button>
+          <button class="sidebar-action-btn" onclick="logout()" title="Lock Calendar">
+            <i class="ti ti-lock"></i>
+            <span>Lock</span>
+          </button>
+        </div>
+        <button class="sidebar-action-btn" onclick="testNotificationFlow()" style="width: 100%;" title="Test Alarm & Notifications">
+          <i class="ti ti-bell-ringing"></i>
+          <span>Test Alarm</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Calendar Container -->
+    <main class="calendar-pane">
+      <header class="cal-header">
+        <div class="cal-header-left">
+          <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Open menu">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          
+          <div class="cal-nav-group">
+            <button class="cal-nav-btn" onclick="navToday()">Today</button>
+            <button class="cal-nav-btn cal-nav-arrow" onclick="navPeriod(-1)" title="Previous">
+              <i class="ti ti-chevron-left"></i>
+            </button>
+            <button class="cal-nav-btn cal-nav-arrow" onclick="navPeriod(1)" title="Next">
+              <i class="ti ti-chevron-right"></i>
+            </button>
+          </div>
+
+          <span class="cal-period-title" id="cal-period-title">July 2026</span>
+
+          <div class="search-box">
+            <i class="ti ti-search search-icon"></i>
+            <input type="text" id="search-input" placeholder="Search events, notes..."
+              oninput="handleSearch(this.value)">
+          </div>
+        </div>
+
+        <div class="cal-header-right">
+          <button class="view-toggle-btn active" id="view-month-btn" onclick="setViewMode('month')">Month</button>
+          <button class="view-toggle-btn" id="view-week-btn" onclick="setViewMode('week')">Week</button>
+          <button class="view-toggle-btn" id="view-day-btn" onclick="setViewMode('day')">Day</button>
+          <button class="view-toggle-btn" id="view-agenda-btn" onclick="setViewMode('agenda')">Agenda</button>
+        </div>
+      </header>
+
+      <!-- Dynamic Calendar Container -->
+      <div class="cal-content" id="cal-content">
+        <!-- Rendered view goes here -->
+      </div>
+    </main>
+
+    <!-- Right Panel: Event Editor / Viewer -->
+    <section class="editor-pane closed" id="editor-pane">
+      <!-- Unselected Event state -->
+      <div id="editor-placeholder" class="editor-placeholder-state">
+        <i class="ti ti-calendar-shield placeholder-icon"></i>
+        <p>Select an event to view or edit, or click a date slot to create a new one.</p>
+      </div>
+
+      <!-- Active Event view/edit state -->
+      <div id="editor-content" class="editor-content-wrapper hidden">
+
+        <!-- Viewer Mode -->
+        <div id="event-viewer" class="event-viewer-mode">
+          <div class="editor-toolbar">
+            <button class="icon-btn close-btn" onclick="closeEditor()" title="Close Panel">
+              <i class="ti ti-arrow-left"></i>
+            </button>
+            <div class="toolbar-actions">
+              <button class="btn btn-secondary" onclick="enterEditMode()">
+                <i class="ti ti-edit"></i> Edit
+              </button>
+              <button class="btn btn-danger-text" onclick="deleteActiveEvent()">
+                <i class="ti ti-trash"></i> Delete
+              </button>
+            </div>
+          </div>
+          <div class="viewer-body">
+            <div class="viewer-meta">
+              <span class="category-pill" id="view-event-cat">Private</span>
+            </div>
+            <h2 id="view-event-title" class="event-view-title">Meeting Title</h2>
+            <div class="event-time-display">
+              <i class="ti ti-clock"></i>
+              <span id="view-event-time">July 6, 2026 10:00 - 11:30</span>
+            </div>
+            <div id="view-event-body" class="event-view-body">
+              <!-- Event Description -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Editor Mode -->
+        <div id="note-editor" class="event-editor-mode hidden">
+          <div class="editor-toolbar">
+            <button class="icon-btn close-btn" onclick="cancelEditorEdit()" title="Cancel">
+              <i class="ti ti-x"></i> Cancel
+            </button>
+            <div class="toolbar-actions">
+              <button class="btn btn-accent" onclick="saveActiveEvent()">
+                <i class="ti ti-device-floppy"></i> Save
+              </button>
+            </div>
+          </div>
+          <form class="editor-form" onsubmit="event.preventDefault();">
+            <div class="form-group-row">
+              <input type="text" id="editor-event-title" placeholder="Event Title" class="editor-input-title" required>
+              <input type="text" id="editor-event-cat" placeholder="Category (e.g. Work, Personal)" class="editor-input-cat">
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="editor-event-allday" onchange="toggleAllDayCheck(this.checked)">
+                <span>All Day Event</span>
+              </label>
+            </div>
+
+            <div class="datetime-inputs-wrapper">
+              <div class="datetime-row">
+                <label>Start</label>
+                <div class="datetime-inputs">
+                  <input type="date" id="editor-event-start-date" required>
+                  <input type="time" id="editor-event-start-time">
+                </div>
+              </div>
+              <div class="datetime-row">
+                <label>End</label>
+                <div class="datetime-inputs">
+                  <input type="date" id="editor-event-end-date" required>
+                  <input type="time" id="editor-event-end-time">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+              <textarea id="editor-event-body" placeholder="Add description, location or notes..."
+                class="editor-textarea"></textarea>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- Theme Script -->
+  <script>
+    let currentTheme = localStorage.getItem('theme') || 'light';
+
+    function applyTheme() {
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      const themeIcon = document.getElementById('theme-icon');
+      if (themeIcon) {
+        themeIcon.className = currentTheme === 'light' ? 'ti ti-sun' : 'ti ti-moon';
+      }
+    }
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('theme', currentTheme);
+      applyTheme();
+    }
+
+    document.addEventListener('DOMContentLoaded', applyTheme);
+    window.toggleTheme = toggleTheme;
+  </script>
+
+  <!-- P2P and Encryption Module -->
+  <script type="module">
+    import ZEN from 'https://cdn.jsdelivr.net/gh/scobru/zen@main/zen.min.js';
+
+    let zen;
+    let pair;
+    let isAuthenticated = false;
+
+    // Local decrypted events store
+    const localEvents = {};
+    let selectedEventId = null;
+    let isEditing = false;
+    let viewMode = localStorage.getItem('zencal_viewmode') || 'month';
+    let activeCategory = 'all';
+    let searchQuery = '';
+    
+    // Calendar Navigation State
+    let currentDate = new Date();
+    let miniCalDate = new Date();
+
+    const relays = ["wss://delay.scobrudot.dev/zen", "wss://delay.up.railway.app/zen", "wss://zen.akao.io:8420/zen", "wss://zen0.akao.io:8420/zen", "wss://zen1.akao.io:8420/zen"];
+    localStorage.removeItem('zenPeers');
+
+    zen = new ZEN({
+      peers: relays,
+    });
+
+    // Handle authentication / unlock
+    async function login() {
+      const userInput = document.getElementById('user-input').value || sessionStorage.getItem('zen_user');
+      const passInput = document.getElementById('pass-input').value || sessionStorage.getItem('zen_pass');
+      if (!userInput || !passInput) return;
+
+      try {
+        const btn = document.getElementById('login-btn');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="ti ti-loader animate-spin"></i> Decrypting...';
+        btn.disabled = true;
+
+        pair = await ZEN.pair(null, { seed: userInput + passInput });
+        isAuthenticated = true;
+
+        sessionStorage.setItem('zen_user', userInput);
+        sessionStorage.setItem('zen_pass', passInput);
+
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+
+        // Update E2EE ping indicator
+        const ping = document.getElementById('status-ping');
+        if (ping) {
+          ping.style.backgroundColor = '#2ec4b6';
+          ping.style.boxShadow = '0 0 8px #2ec4b6';
+        }
+        const statusText = document.getElementById('status-footer-text');
+        if (statusText) {
+          statusText.textContent = 'Decrypted & Synced';
+        }
+
+        applyTheme(); // Sync layout assets
+        loadEvents();
+        renderMiniCalendar();
+        requestNotificationPermission();
+      } catch (e) {
+        console.error("Login Error:", e);
+        alert("Decryption failed: " + e.message);
+        const btn = document.getElementById('login-btn');
+        if (btn) {
+          btn.innerHTML = '<i class="ti ti-lock-open"></i> Decrypt & Enter';
+          btn.disabled = false;
+        }
+      }
+    }
+
+    // Load P2P Encrypted calendar subscription
+    function loadEvents() {
+      console.log("loadEvents subscription initialized.");
+      zen.get('~' + pair.pub).get('calendar').map().on(async (node, id) => {
+        console.log("loadEvents received node:", id, node);
+        if (!node) {
+          delete localEvents[id];
+          if (selectedEventId === id) {
+            closeEditor();
+          }
+          triggerRender();
+          return;
+        }
+
+        try {
+          const title = await ZEN.decrypt(node.title, pair);
+          const body = await ZEN.decrypt(node.body, pair);
+          const cat = await ZEN.decrypt(node.cat, pair) || 'personal';
+          const start = await ZEN.decrypt(node.start, pair);
+          const end = await ZEN.decrypt(node.end, pair);
+          const allDayStr = await ZEN.decrypt(node.allDay, pair);
+          const allDay = allDayStr === 'true';
+
+          localEvents[id] = {
+            id,
+            title,
+            body,
+            cat,
+            start,
+            end,
+            allDay,
+            timestamp: node.timestamp || Date.now()
+          };
+          console.log("loadEvents decrypted event success:", id, localEvents[id]);
+        } catch (e) {
+          console.error("Could not decrypt calendar node:", id, e);
+          return;
+        }
+
+        triggerRender();
+      });
+    }
+
+    // Debounced UI updates
+    let renderTimeout = null;
+    function triggerRender() {
+      if (renderTimeout) clearTimeout(renderTimeout);
+      renderTimeout = setTimeout(() => {
+        renderApp();
+      }, 50);
+    }
+
+    // Master render function
+    function renderApp() {
+      const eventsArray = Object.values(localEvents);
+
+      // Extract unique categories & update Sidebar Counts
+      const categories = {};
+      eventsArray.forEach(e => {
+        const cat = e.cat ? e.cat.toLowerCase().trim() : 'personal';
+        categories[cat] = (categories[cat] || 0) + 1;
+      });
+
+      // Update sidebar categories
+      const catContainer = document.getElementById('sidebar-categories');
+      catContainer.innerHTML = '';
+      Object.entries(categories).sort().forEach(([catName, count]) => {
+        const item = document.createElement('a');
+        item.href = '#';
+        item.className = `nav-item ${activeCategory === catName ? 'active' : ''}`;
+        item.onclick = (e) => {
+          e.preventDefault();
+          setCategoryFilter(catName);
+        };
+        const catColor = getCategoryColor(catName).border;
+        item.innerHTML = `
+          <span class="cat-color-dot" style="background-color: ${catColor};"></span>
+          <span class="nav-text" style="text-transform: capitalize;">${escapeHtml(catName)}</span>
+          <span class="nav-count">${count}</span>
+        `;
+        catContainer.appendChild(item);
+      });
+
+      // Update "All Events" count
+      document.getElementById('count-all').textContent = eventsArray.length;
+      document.getElementById('nav-all').className = `nav-item ${activeCategory === 'all' ? 'active' : ''}`;
+
+      // Filter Events in memory
+      let filtered = eventsArray;
+      if (activeCategory !== 'all') {
+        filtered = filtered.filter(e => e.cat.toLowerCase().trim() === activeCategory);
+      }
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(e =>
+          e.title.toLowerCase().includes(q) ||
+          e.body.toLowerCase().includes(q) ||
+          e.cat.toLowerCase().includes(q)
+        );
+      }
+
+      // Render Period Title and Views
+      renderActivePeriodHeader();
+      renderCalendarView(filtered);
+      renderEditorPane();
+    }
+
+    // Helper for category colors to keep aesthetics premium (ponytail: inline styling helper)
+    function getCategoryColor(catName) {
+      const name = (catName || '').toLowerCase().trim();
+      switch (name) {
+        case 'work': return { bg: 'rgba(16, 185, 129, 0.08)', border: '#10b981', text: '#10b981' };
+        case 'meeting': return { bg: 'rgba(245, 158, 11, 0.08)', border: '#f59e0b', text: '#f59e0b' };
+        case 'task': return { bg: 'rgba(236, 72, 153, 0.08)', border: '#ec4899', text: '#ec4899' };
+        case 'personal': return { bg: 'rgba(99, 102, 241, 0.08)', border: '#6366f1', text: '#6366f1' };
+        default: return { bg: 'rgba(14, 165, 233, 0.08)', border: '#0ea5e9', text: '#0ea5e9' };
+      }
+    }
+
+    // Set the period title on topbar
+    function renderActivePeriodHeader() {
+      const titleEl = document.getElementById('cal-period-title');
+      const year = currentDate.getFullYear();
+      if (viewMode === 'month') {
+        const monthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
+        titleEl.textContent = `${monthName} ${year}`;
+      } else if (viewMode === 'week') {
+        const start = getStartOfWeek(currentDate);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6);
+        const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
+        const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
+        if (startMonth === endMonth) {
+          titleEl.textContent = `${startMonth} ${start.getDate()} - ${end.getDate()}, ${year}`;
+        } else {
+          titleEl.textContent = `${startMonth} ${start.getDate()} - ${endMonth} ${end.getDate()}, ${year}`;
+        }
+      } else if (viewMode === 'day') {
+        const dayStr = currentDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
+        titleEl.textContent = `${dayStr}, ${year}`;
+      } else if (viewMode === 'agenda') {
+        titleEl.textContent = `Agenda starting ${currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+      }
+    }
+
+    // Render Mini Calendar in sidebar
+    function renderMiniCalendar() {
+      const titleEl = document.getElementById('mini-cal-title');
+      const gridEl = document.getElementById('mini-cal-grid');
+      
+      const year = miniCalDate.getFullYear();
+      const month = miniCalDate.getMonth();
+      
+      const monthName = miniCalDate.toLocaleDateString('en-US', { month: 'long' });
+      titleEl.textContent = `${monthName} ${year}`;
+      
+      gridEl.innerHTML = '';
+      
+      // Days header labels
+      const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+      days.forEach(d => {
+        const label = document.createElement('div');
+        label.className = 'mini-cal-day-label';
+        label.textContent = d;
+        gridEl.appendChild(label);
+      });
+      
+      // Calculate days grid
+      const firstDay = new Date(year, month, 1);
+      let startDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday
+      startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // convert to Monday=0
+      
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+      
+      // Render previous month days
+      for (let i = startDayOfWeek - 1; i >= 0; i--) {
+        const dayNum = daysInPrevMonth - i;
+        const cell = createMiniCalCell(dayNum, new Date(year, month - 1, dayNum), true);
+        gridEl.appendChild(cell);
+      }
+      
+      // Render current month days
+      for (let i = 1; i <= daysInMonth; i++) {
+        const cell = createMiniCalCell(i, new Date(year, month, i), false);
+        gridEl.appendChild(cell);
+      }
+      
+      // Render next month days to complete grid rows
+      const totalCells = startDayOfWeek + daysInMonth;
+      const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+      for (let i = 1; i <= remainingCells; i++) {
+        const cell = createMiniCalCell(i, new Date(year, month + 1, i), true);
+        gridEl.appendChild(cell);
+      }
+    }
+
+    function createMiniCalCell(dayNum, dateObj, isOther) {
+      const cell = document.createElement('div');
+      cell.className = 'mini-cal-day';
+      if (isOther) cell.classList.add('other-month');
+      
+      cell.textContent = dayNum;
+      
+      const today = new Date();
+      if (isSameDate(dateObj, today)) cell.classList.add('today');
+      if (isSameDate(dateObj, currentDate)) cell.classList.add('selected');
+      
+      cell.onclick = () => {
+        currentDate = new Date(dateObj);
+        miniCalDate = new Date(dateObj);
+        renderMiniCalendar();
+        triggerRender();
+      };
+      
+      return cell;
+    }
+
+    // Helper: Compare simple dates
+    function isSameDate(d1, d2) {
+      return d1.getFullYear() === d2.getFullYear() &&
+             d1.getMonth() === d2.getMonth() &&
+             d1.getDate() === d2.getDate();
+    }
+
+    function isEventOnDay(event, dateStr) {
+      // dateStr is 'YYYY-MM-DD'
+      const dayStart = new Date(dateStr + 'T00:00:00');
+      const dayEnd = new Date(dateStr + 'T23:59:59');
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
+      return eventStart <= dayEnd && eventEnd >= dayStart;
+    }
+
+    // Master Calendar view Router
+    function renderCalendarView(events) {
+      const container = document.getElementById('cal-content');
+      container.innerHTML = '';
+
+      if (viewMode === 'month') {
+        renderMonthView(container, events);
+      } else if (viewMode === 'week') {
+        renderWeekView(container, events);
+      } else if (viewMode === 'day') {
+        renderDayView(container, events);
+      } else if (viewMode === 'agenda') {
+        renderAgendaView(container, events);
+      }
+    }
+
+    // ── Month View Renderer ──
+    function renderMonthView(container, events) {
+      const grid = document.createElement('div');
+      grid.className = 'month-grid';
+
+      // Day name labels
+      const labels = document.createElement('div');
+      labels.className = 'month-day-labels';
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      days.forEach(d => {
+        const cell = document.createElement('div');
+        cell.textContent = d;
+        labels.appendChild(cell);
+      });
+      grid.appendChild(labels);
+
+      const weeksContainer = document.createElement('div');
+      weeksContainer.className = 'month-weeks-container';
+
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      const firstDay = new Date(year, month, 1);
+      let startDayOfWeek = firstDay.getDay(); 
+      startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // convert to Mon=0
+
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+      const totalCellsNeeded = 42; // standard 6-row grid
+      const cells = [];
+
+      // Prev Month days
+      for (let i = startDayOfWeek - 1; i >= 0; i--) {
+        const dayNum = daysInPrevMonth - i;
+        cells.push({ dayNum, date: new Date(year, month - 1, dayNum), other: true });
+      }
+
+      // Current Month days
+      for (let i = 1; i <= daysInMonth; i++) {
+        cells.push({ dayNum: i, date: new Date(year, month, i), other: false });
+      }
+
+      // Next Month days
+      const currentLen = cells.length;
+      for (let i = 1; i <= (totalCellsNeeded - currentLen); i++) {
+        cells.push({ dayNum: i, date: new Date(year, month + 1, i), other: true });
+      }
+
+      // Render grid rows (6 rows of 7 days)
+      for (let row = 0; row < 6; row++) {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'month-row';
+
+        for (let col = 0; col < 7; col++) {
+          const index = row * 7 + col;
+          const cellData = cells[index];
+          const cellEl = document.createElement('div');
+          cellEl.className = 'month-cell';
+          if (cellData.other) cellEl.classList.add('other-month');
+
+          const formattedDateStr = formatDateKey(cellData.date);
+          if (isSameDate(cellData.date, new Date())) {
+            cellEl.classList.add('today');
+          }
+
+          cellEl.innerHTML = `
+            <div class="month-cell-header">
+              <span class="month-day-number">${cellData.dayNum}</span>
+            </div>
+            <div class="month-cell-events" id="events-${formattedDateStr}"></div>
+          `;
+
+          // Click cell to create new event
+          cellEl.onclick = (e) => {
+            if (e.target.closest('.event-pill')) return; // ignore clicks on event pills
+            createNewEvent(formattedDateStr);
+          };
+
+          rowEl.appendChild(cellEl);
+        }
+        weeksContainer.appendChild(rowEl);
+      }
+      grid.appendChild(weeksContainer);
+      container.appendChild(grid);
+
+      // Populate events on grid cells
+      cells.forEach(cellData => {
+        const key = formatDateKey(cellData.date);
+        const dayEvents = events.filter(e => isEventOnDay(e, key));
+
+        // Sort events: allDay first, then by start time
+        dayEvents.sort((a, b) => {
+          if (a.allDay && !b.allDay) return -1;
+          if (!a.allDay && b.allDay) return 1;
+          return new Date(a.start) - new Date(b.start);
+        });
+
+        const cellEventsEl = document.getElementById(`events-${key}`);
+        if (cellEventsEl) {
+          const maxVisible = 3;
+          const visible = dayEvents.slice(0, maxVisible);
+          const hiddenCount = dayEvents.length - maxVisible;
+
+          visible.forEach(event => {
+            const pill = document.createElement('div');
+            pill.className = 'event-pill';
+            const colors = getCategoryColor(event.cat);
+            pill.style.backgroundColor = colors.bg;
+            pill.style.borderColor = colors.border;
+            pill.style.color = colors.text;
+
+            let timeStr = '';
+            if (!event.allDay) {
+              const startDate = new Date(event.start);
+              timeStr = `<span class="event-pill-time">${formatTimeShort(startDate)}</span>`;
+            }
+
+            pill.innerHTML = `${timeStr} <span>${escapeHtml(event.title)}</span>`;
+            pill.onclick = (e) => {
+              e.stopPropagation();
+              selectEvent(event.id);
+            };
+            cellEventsEl.appendChild(pill);
+          });
+
+          if (hiddenCount > 0) {
+            const moreIndicator = document.createElement('div');
+            moreIndicator.className = 'more-events-indicator';
+            moreIndicator.textContent = `+${hiddenCount} more`;
+            cellEventsEl.appendChild(moreIndicator);
+          }
+        }
+      });
+    }
+
+    // ── Week / Day Hourly Grid Renderer ──
+    function renderWeekView(container, events) {
+      renderHourlyLayout(container, events, 7);
+    }
+
+    function renderDayView(container, events) {
+      renderHourlyLayout(container, events, 1);
+    }
+
+    function renderHourlyLayout(container, events, colsCount) {
+      const hourGrid = document.createElement('div');
+      hourGrid.className = 'hour-grid-container';
+
+      // 1. Calculate active columns dates
+      const colDates = [];
+      if (colsCount === 1) {
+        colDates.push(new Date(currentDate));
+      } else {
+        const start = getStartOfWeek(currentDate);
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(start);
+          d.setDate(d.getDate() + i);
+          colDates.push(d);
+        }
+      }
+
+      // 2. Render Header Row
+      const headerRow = document.createElement('div');
+      headerRow.className = 'allday-row-wrapper';
+      
+      const labelCol = document.createElement('div');
+      labelCol.className = 'allday-label-col';
+      labelCol.style.borderBottom = '1px solid var(--border-color)';
+      labelCol.style.height = '60px'; // align with main headers
+      
+      const headerColsContainer = document.createElement('div');
+      headerColsContainer.className = 'hour-columns-container';
+      headerColsContainer.style.gridTemplateColumns = `repeat(${colsCount}, 1fr)`;
+      
+      colDates.forEach(date => {
+        const colHeader = document.createElement('div');
+        colHeader.className = 'hour-column-header';
+        if (isSameDate(date, new Date())) colHeader.classList.add('today');
+        
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const dayNum = date.getDate();
+        colHeader.innerHTML = `
+          <span class="hour-column-dayname">${dayName}</span>
+          <span class="hour-column-daynum">${dayNum}</span>
+        `;
+        headerColsContainer.appendChild(colHeader);
+      });
+      headerRow.appendChild(labelCol);
+      headerRow.appendChild(headerColsContainer);
+      hourGrid.appendChild(headerRow);
+
+      // 3. Render All-day Events Row
+      const alldayRow = document.createElement('div');
+      alldayRow.className = 'allday-row-wrapper';
+      
+      const alldayLabel = document.createElement('div');
+      alldayLabel.className = 'allday-label-col';
+      alldayLabel.textContent = 'All Day';
+      alldayRow.appendChild(alldayLabel);
+      
+      const alldayCells = document.createElement('div');
+      alldayCells.className = 'hour-columns-container';
+      alldayCells.style.gridTemplateColumns = `repeat(${colsCount}, 1fr)`;
+      
+      colDates.forEach(date => {
+        const key = formatDateKey(date);
+        const colAlldayEvents = events.filter(e => e.allDay && isEventOnDay(e, key));
+        
+        const colCell = document.createElement('div');
+        colCell.className = 'allday-cells-col';
+        colCell.onclick = () => createNewEvent(key, true);
+        
+        colAlldayEvents.forEach(event => {
+          const pill = document.createElement('div');
+          pill.className = 'event-pill';
+          const colors = getCategoryColor(event.cat);
+          pill.style.backgroundColor = colors.bg;
+          pill.style.borderColor = colors.border;
+          pill.style.color = colors.text;
+          pill.textContent = event.title;
+          pill.onclick = (e) => {
+            e.stopPropagation();
+            selectEvent(event.id);
+          };
+          colCell.appendChild(pill);
+        });
+        alldayCells.appendChild(colCell);
+      });
+      alldayRow.appendChild(alldayCells);
+      hourGrid.appendChild(alldayRow);
+
+      // 4. Main Scrollable Hourly Wrapper
+      const hourlyView = document.createElement('div');
+      hourlyView.className = 'hourly-view-wrapper';
+
+      // Left labels
+      const hourLabelsCol = document.createElement('div');
+      hourLabelsCol.className = 'hour-labels-column';
+      for (let hour = 0; hour < 24; hour++) {
+        const cell = document.createElement('div');
+        cell.className = 'hour-label-cell';
+        const displayHour = hour === 0 ? '12 AM' : hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
+        cell.textContent = displayHour;
+        hourLabelsCol.appendChild(cell);
+      }
+      hourlyView.appendChild(hourLabelsCol);
+
+      // Right columns for days
+      const colsContainer = document.createElement('div');
+      colsContainer.className = 'hour-columns-container';
+      colsContainer.style.gridTemplateColumns = `repeat(${colsCount}, 1fr)`;
+
+      colDates.forEach(date => {
+        const key = formatDateKey(date);
+        const colEvents = events.filter(e => !e.allDay && isEventOnDay(e, key));
+
+        const column = document.createElement('div');
+        column.className = 'hour-column';
+        column.onclick = (e) => {
+          if (e.target !== column) return; // avoid trigger on inner event clicks
+          const rect = column.getBoundingClientRect();
+          const clickY = e.clientY - rect.top;
+          const clickedHour = Math.floor(clickY / 60);
+          createNewEventWithTime(key, clickedHour);
+        };
+
+        colEvents.forEach(event => {
+          const eventStart = new Date(event.start);
+          const eventEnd = new Date(event.end);
+          
+          const startOffsetDate = new Date(key + 'T00:00:00');
+          const endOffsetDate = new Date(key + 'T23:59:59');
+
+          const effectiveStart = eventStart < startOffsetDate ? startOffsetDate : eventStart;
+          const effectiveEnd = eventEnd > endOffsetDate ? endOffsetDate : eventEnd;
+
+          const startHour = effectiveStart.getHours() + (effectiveStart.getMinutes() / 60);
+          const endHour = effectiveEnd.getHours() + (effectiveEnd.getMinutes() / 60);
+          const duration = Math.max(0.5, endHour - startHour); // minimum 30 mins height visually
+
+          const top = startHour * 60;
+          const height = duration * 60;
+
+          const card = document.createElement('div');
+          card.className = 'hourly-event-card';
+          const colors = getCategoryColor(event.cat);
+          card.style.top = `${top}px`;
+          card.style.height = `${height}px`;
+          card.style.backgroundColor = colors.bg;
+          card.style.borderColor = colors.border;
+          card.style.color = colors.text;
+
+          card.innerHTML = `
+            <div class="hourly-event-title">${escapeHtml(event.title)}</div>
+            <div class="hourly-event-time">${formatTimeShort(eventStart)} - ${formatTimeShort(eventEnd)}</div>
+          `;
+          card.onclick = (e) => {
+            e.stopPropagation();
+            selectEvent(event.id);
+          };
+          column.appendChild(card);
+        });
+
+        colsContainer.appendChild(column);
+      });
+
+      hourlyView.appendChild(colsContainer);
+      hourGrid.appendChild(hourlyView);
+      container.appendChild(hourGrid);
+      
+      // Auto scroll to 8 AM to avoid empty top screen
+      setTimeout(() => {
+        hourGrid.scrollTop = 480; 
+      }, 50);
+    }
+
+    // ── Agenda View Renderer ──
+    function renderAgendaView(container, events) {
+      const agenda = document.createElement('div');
+      agenda.className = 'agenda-view';
+
+      // Gather and sort all events starting from currentDate
+      const activeEvents = events.filter(e => {
+        const eventEnd = new Date(e.end);
+        const dayStart = new Date(currentDate);
+        dayStart.setHours(0,0,0,0);
+        return eventEnd >= dayStart;
+      });
+
+      activeEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+
+      if (activeEvents.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.innerHTML = `
+          <i class="ti ti-calendar-off empty-icon"></i>
+          <h3>No Upcoming Events</h3>
+          <p>Create secure encrypted events to fill your schedule.</p>
+        `;
+        agenda.appendChild(empty);
+        container.appendChild(agenda);
+        return;
+      }
+
+      // Group events by start day
+      const groups = {};
+      activeEvents.forEach(event => {
+        const d = new Date(event.start);
+        const key = formatDateKey(d);
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(event);
+      });
+
+      Object.entries(groups).forEach(([dateStr, dayEvents]) => {
+        const parsedDate = new Date(dateStr + 'T00:00:00');
+        const dayGroup = document.createElement('div');
+        dayGroup.className = 'agenda-day-group';
+
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'agenda-date-header';
+        
+        const friendlyName = parsedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        dayHeader.textContent = friendlyName;
+        dayGroup.appendChild(dayHeader);
+
+        dayEvents.forEach(event => {
+          const row = document.createElement('div');
+          row.className = 'agenda-event-row';
+          row.onclick = () => selectEvent(event.id);
+
+          const start = new Date(event.start);
+          const end = new Date(event.end);
+          let timeDisplay = 'All Day';
+          if (!event.allDay) {
+            timeDisplay = `${formatTimeShort(start)} - ${formatTimeShort(end)}`;
+          }
+
+          const colors = getCategoryColor(event.cat);
+
+          row.innerHTML = `
+            <div class="agenda-event-left">
+              <div class="agenda-event-time-pill">${timeDisplay}</div>
+              <div class="agenda-event-details">
+                <span class="agenda-event-title">${escapeHtml(event.title)}</span>
+                <span class="agenda-event-desc">${escapeHtml(event.body || 'No description.')}</span>
+              </div>
+            </div>
+            <div class="agenda-event-right">
+              <span class="agenda-event-cat" style="background-color: ${colors.bg}; color: ${colors.text}; border: 1px solid ${colors.border}">${escapeHtml(event.cat)}</span>
+            </div>
+          `;
+          dayGroup.appendChild(row);
+        });
+
+        agenda.appendChild(dayGroup);
+      });
+
+      container.appendChild(agenda);
+    }
+
+    // ── Editor / Detail Panel Renderer ──
+    function renderEditorPane() {
+      const editorPane = document.getElementById('editor-pane');
+      const placeholder = document.getElementById('editor-placeholder');
+      const content = document.getElementById('editor-content');
+
+      if (!selectedEventId) {
+        editorPane.classList.add('closed');
+        placeholder.classList.remove('hidden');
+        content.classList.add('hidden');
+        return;
+      }
+
+      editorPane.classList.remove('closed');
+      placeholder.classList.add('hidden');
+      content.classList.remove('hidden');
+
+      const viewerMode = document.getElementById('event-viewer');
+      const editorMode = document.getElementById('note-editor');
+
+      if (isEditing) {
+        viewerMode.classList.add('hidden');
+        editorMode.classList.remove('hidden');
+
+        const titleInput = document.getElementById('editor-event-title');
+        const catInput = document.getElementById('editor-event-cat');
+        const allDayCheckbox = document.getElementById('editor-event-allday');
+        const startDateInput = document.getElementById('editor-event-start-date');
+        const startTimeInput = document.getElementById('editor-event-start-time');
+        const endDateInput = document.getElementById('editor-event-end-date');
+        const endTimeInput = document.getElementById('editor-event-end-time');
+        const bodyTextarea = document.getElementById('editor-event-body');
+
+        if (selectedEventId === 'new') {
+          if (!titleInput.dataset.modified) {
+            // Default setup for a fresh event
+            titleInput.value = '';
+            catInput.value = '';
+            bodyTextarea.value = '';
+            
+            // Prefill date values based on form state
+            const targetDateStr = titleInput.dataset.targetDate || formatDateKey(new Date());
+            startDateInput.value = targetDateStr;
+            endDateInput.value = targetDateStr;
+
+            const targetHour = parseInt(titleInput.dataset.targetHour);
+            if (!isNaN(targetHour)) {
+              allDayCheckbox.checked = false;
+              startTimeInput.value = `${String(targetHour).padStart(2, '0')}:00`;
+              endTimeInput.value = `${String((targetHour + 1) % 24).padStart(2, '0')}:00`;
+            } else {
+              const isAllDayState = titleInput.dataset.targetAllDay === 'true';
+              allDayCheckbox.checked = isAllDayState;
+              startTimeInput.value = '09:00';
+              endTimeInput.value = '10:00';
+            }
+            toggleAllDayCheck(allDayCheckbox.checked);
+          }
+        } else {
+          const event = localEvents[selectedEventId];
+          if (event && !titleInput.dataset.modified) {
+            titleInput.value = event.title;
+            catInput.value = event.cat;
+            bodyTextarea.value = event.body;
+            allDayCheckbox.checked = event.allDay;
+
+            // Split date and times
+            const startDt = new Date(event.start);
+            const endDt = new Date(event.end);
+
+            startDateInput.value = formatDateKey(startDt);
+            startTimeInput.value = formatTimeKey(startDt);
+            endDateInput.value = formatDateKey(endDt);
+            endTimeInput.value = formatTimeKey(endDt);
+
+            toggleAllDayCheck(event.allDay);
+          }
+        }
+      } else {
+        viewerMode.classList.remove('hidden');
+        editorMode.classList.add('hidden');
+
+        // Clear modifications state
+        delete document.getElementById('editor-event-title').dataset.modified;
+
+        const event = localEvents[selectedEventId];
+        if (event) {
+          const colors = getCategoryColor(event.cat);
+          const catPill = document.getElementById('view-event-cat');
+          catPill.textContent = event.cat;
+          catPill.style.backgroundColor = colors.bg;
+          catPill.style.color = colors.text;
+          catPill.style.border = `1px solid ${colors.border}`;
+
+          document.getElementById('view-event-title').textContent = event.title;
+          
+          const start = new Date(event.start);
+          const end = new Date(event.end);
+          let friendlyTime = '';
+          if (event.allDay) {
+            friendlyTime = `${start.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} (All Day)`;
+          } else {
+            friendlyTime = `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} ${formatTimeShort(start)} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} ${formatTimeShort(end)}`;
+          }
+          document.getElementById('view-event-time').textContent = friendlyTime;
+
+          const viewBody = document.getElementById('view-event-body');
+          viewBody.textContent = event.body || 'No description.';
+        } else {
+          // Prevent showing stale placeholders while loading from P2P node
+          document.getElementById('view-event-cat').textContent = 'Decrypting...';
+          document.getElementById('view-event-cat').style.backgroundColor = 'var(--active-bg)';
+          document.getElementById('view-event-cat').style.color = 'var(--text-secondary)';
+          document.getElementById('view-event-cat').style.border = '1px solid var(--border-color)';
+          document.getElementById('view-event-title').textContent = 'Loading schedule item...';
+          document.getElementById('view-event-time').textContent = '';
+          document.getElementById('view-event-body').textContent = '';
+        }
+      }
+    }
+
+    // CRUD - Save event
+    async function saveActiveEvent() {
+      if (!isAuthenticated) return;
+      const title = document.getElementById('editor-event-title').value.trim();
+      const body = document.getElementById('editor-event-body').value.trim();
+      const cat = document.getElementById('editor-event-cat').value.trim() || 'personal';
+      const allDay = document.getElementById('editor-event-allday').checked;
+      
+      const startDate = document.getElementById('editor-event-start-date').value;
+      const startTime = document.getElementById('editor-event-start-time').value || '00:00';
+      const endDate = document.getElementById('editor-event-end-date').value;
+      const endTime = document.getElementById('editor-event-end-time').value || '00:00';
+
+      if (!title) {
+        showToast('Please enter an event title.');
+        return;
+      }
+      if (!startDate || !endDate) {
+        showToast('Please specify start and end dates.');
+        return;
+      }
+
+      const startISO = allDay ? `${startDate}T00:00:00` : `${startDate}T${startTime}:00`;
+      const endISO = allDay ? `${endDate}T23:59:59` : `${endDate}T${endTime}:00`;
+
+      if (new Date(endISO) < new Date(startISO)) {
+        showToast('End date/time cannot be before start date/time.');
+        return;
+      }
+
+      const saveBtn = document.querySelector('#note-editor .btn-accent');
+      const originalHtml = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<i class="ti ti-loader animate-spin"></i> Saving...';
+      saveBtn.disabled = true;
+
+      try {
+        console.log("saveActiveEvent starting field-by-field encryption...");
+        const encTitle = await ZEN.encrypt(title, pair);
+        const encBody = await ZEN.encrypt(body, pair);
+        const encCat = await ZEN.encrypt(cat, pair);
+        const encStart = await ZEN.encrypt(startISO, pair);
+        const encEnd = await ZEN.encrypt(endISO, pair);
+        const encAllDay = await ZEN.encrypt(allDay ? 'true' : 'false', pair);
+
+        const node = {
+          title: encTitle,
+          body: encBody,
+          cat: encCat,
+          start: encStart,
+          end: encEnd,
+          allDay: encAllDay,
+          timestamp: Date.now(),
+          encrypted: true
+        };
+
+        const isNew = selectedEventId === 'new';
+        const soul = isNew ? ('event-' + Date.now() + '-' + Math.random().toString(36).substring(7)) : selectedEventId;
+
+        console.log("saveActiveEvent putting node:", soul, node);
+        zen.get('~' + pair.pub).get('calendar').get(soul).put(node, (ack) => {
+          saveBtn.innerHTML = originalHtml;
+          saveBtn.disabled = false;
+          console.log("saveActiveEvent put callback ack:", ack);
+          if (ack && ack.err) {
+            alert("Storage failed: " + ack.err);
+          } else {
+            showToast(isNew ? 'Event encrypted and scheduled!' : 'Scheduled event updated!');
+            isEditing = false;
+            selectedEventId = soul; 
+            triggerRender();
+          }
+        }, { authenticator: pair });
+      } catch (err) {
+        console.error("saveActiveEvent encryption/save failed:", err);
+        saveBtn.innerHTML = originalHtml;
+        saveBtn.disabled = false;
+        alert("Encryption failed: " + err.message);
+      }
+    }
+
+    // CRUD - Delete Event
+    async function deleteActiveEvent() {
+      if (!selectedEventId || selectedEventId === 'new') return;
+      await deleteEvent(selectedEventId);
+    }
+
+    async function deleteEvent(soul) {
+      if (!isAuthenticated) return;
+      if (!confirm("Are you sure you want to permanently delete this encrypted calendar event?")) return;
+
+      zen.get('~' + pair.pub).get('calendar').get(soul).put(null, (ack) => {
+        if (ack && !ack.err) {
+          showToast('Event removed from schedule.');
+          if (selectedEventId === soul) {
+            selectedEventId = null;
+            isEditing = false;
+          }
+          delete localEvents[soul];
+          triggerRender();
+        } else if (ack && ack.err) {
+          alert("Deletion failed: " + ack.err);
+        }
+      }, { authenticator: pair });
+    }
+
+    // Interactive helper actions
+    function selectEvent(id) {
+      selectedEventId = id;
+      isEditing = false;
+      triggerRender();
+    }
+
+    function createNewEvent(optDateStr, optAllDay) {
+      selectedEventId = 'new';
+      isEditing = true;
+
+      const titleInput = document.getElementById('editor-event-title');
+      delete titleInput.dataset.modified;
+      titleInput.dataset.targetDate = optDateStr || formatDateKey(new Date());
+      titleInput.dataset.targetAllDay = optAllDay ? 'true' : 'false';
+      delete titleInput.dataset.targetHour;
+
+      triggerRender();
+      setTimeout(() => titleInput.focus(), 50);
+      closeSidebarMobile();
+    }
+
+    function createNewEventWithTime(optDateStr, hourNum) {
+      selectedEventId = 'new';
+      isEditing = true;
+
+      const titleInput = document.getElementById('editor-event-title');
+      delete titleInput.dataset.modified;
+      titleInput.dataset.targetDate = optDateStr || formatDateKey(new Date());
+      titleInput.dataset.targetHour = hourNum;
+      delete titleInput.dataset.targetAllDay;
+
+      triggerRender();
+      setTimeout(() => titleInput.focus(), 50);
+      closeSidebarMobile();
+    }
+
+    function toggleAllDayCheck(isChecked) {
+      const startT = document.getElementById('editor-event-start-time');
+      const endT = document.getElementById('editor-event-end-time');
+      if (isChecked) {
+        startT.style.display = 'none';
+        endT.style.display = 'none';
+        startT.removeAttribute('required');
+        endT.removeAttribute('required');
+      } else {
+        startT.style.display = 'block';
+        endT.style.display = 'block';
+        startT.setAttribute('required', 'required');
+        endT.setAttribute('required', 'required');
+      }
+    }
+
+    function enterEditMode() {
+      isEditing = true;
+      const titleInput = document.getElementById('editor-event-title');
+      delete titleInput.dataset.modified;
+      triggerRender();
+    }
+
+    function cancelEditorEdit() {
+      isEditing = false;
+      if (selectedEventId === 'new') {
+        selectedEventId = null;
+      }
+      triggerRender();
+    }
+
+    function closeEditor() {
+      selectedEventId = null;
+      isEditing = false;
+      triggerRender();
+    }
+
+    function setCategoryFilter(cat) {
+      activeCategory = cat;
+      triggerRender();
+      closeSidebarMobile();
+    }
+
+    function handleSearch(val) {
+      searchQuery = val;
+      triggerRender();
+    }
+
+    function setViewMode(mode) {
+      viewMode = mode;
+      localStorage.setItem('zencal_viewmode', mode);
+      
+      // Update UI active buttons
+      const views = ['month', 'week', 'day', 'agenda'];
+      views.forEach(v => {
+        const btn = document.getElementById(`view-${v}-btn`);
+        if (v === mode) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      
+      triggerRender();
+    }
+
+    // Navigation Period Controls
+    function navToday() {
+      currentDate = new Date();
+      miniCalDate = new Date();
+      renderMiniCalendar();
+      triggerRender();
+    }
+
+    function navPeriod(direction) {
+      if (viewMode === 'month' || viewMode === 'agenda') {
+        currentDate.setMonth(currentDate.getMonth() + direction);
+      } else if (viewMode === 'week') {
+        currentDate.setDate(currentDate.getDate() + (direction * 7));
+      } else if (viewMode === 'day') {
+        currentDate.setDate(currentDate.getDate() + direction);
+      }
+      miniCalDate = new Date(currentDate);
+      renderMiniCalendar();
+      triggerRender();
+    }
+
+    function changeMiniCalMonth(direction) {
+      miniCalDate.setMonth(miniCalDate.getMonth() + direction);
+      renderMiniCalendar();
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('hidden');
+    }
+
+    function closeSidebarMobile() {
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar.classList.contains('open')) {
+        toggleSidebar();
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('zen_user');
+      sessionStorage.removeItem('zen_pass');
+      window.location.reload();
+    }
+
+    // Date formatting string utilities
+    function formatDateKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatTimeKey(date) {
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    function formatTimeShort(date) {
+      return date.toLocaleTimeString(navigator.language || 'en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    }
+
+    function getStartOfWeek(date) {
+      const d = new Date(date);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+      return new Date(d.setDate(diff));
+    }
+
+    // Toast UI component
+    function showToast(message) {
+      let toast = document.getElementById('toast-notification');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-notification';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `<i class="ti ti-circle-check" style="color: var(--accent); font-size: 16px;"></i> ${message}`;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Bind window globals for HTML interactions
+    window.login = login;
+    window.logout = logout;
+    window.createNewEvent = createNewEvent;
+    window.saveActiveEvent = saveActiveEvent;
+    window.deleteActiveEvent = deleteActiveEvent;
+    window.enterEditMode = enterEditMode;
+    window.cancelEditorEdit = cancelEditorEdit;
+    window.closeEditor = closeEditor;
+    window.setCategoryFilter = setCategoryFilter;
+    window.handleSearch = handleSearch;
+    window.setViewMode = setViewMode;
+    window.toggleSidebar = toggleSidebar;
+    window.navToday = navToday;
+    window.navPeriod = navPeriod;
+    window.changeMiniCalMonth = changeMiniCalMonth;
+    window.toggleAllDayCheck = toggleAllDayCheck;
+    window.testNotificationFlow = testNotificationFlow;
+
+    // Attach listeners
+    document.getElementById('user-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('pass-input').focus();
+    });
+    document.getElementById('pass-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') login();
+    });
+    document.getElementById('login-btn').addEventListener('click', login);
+
+    // Notification & Alarm Sound Engine (Synthesized audio to avoid assets dependencies)
+    const notifiedEvents = new Set();
+
+    async function requestNotificationPermission() {
+      if ('Notification' in window) {
+        if (Notification.permission === 'default') {
+          await Notification.requestPermission();
+        }
+      }
+    }
+
+    function playAlarmChime() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const playTone = (time, freq) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, time);
+          
+          gain.gain.setValueAtTime(0, time);
+          gain.gain.linearRampToValueAtTime(0.3, time + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, time + 0.8);
+          
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          
+          osc.start(time);
+          osc.stop(time + 0.8);
+        };
+        
+        const now = audioCtx.currentTime;
+        playTone(now, 587.33); // D5
+        playTone(now + 0.15, 880); // A5
+      } catch (e) {
+        console.error("Audio Context playback failed:", e);
+      }
+    }
+
+    function checkUpcomingEvents() {
+      if (!isAuthenticated) return;
+      const now = new Date();
+      const oneMinuteFromNow = new Date(now.getTime() + 60000);
+
+      Object.values(localEvents).forEach(event => {
+        if (event.allDay) return;
+        const eventStart = new Date(event.start);
+        
+        // If event starts in the next 60 seconds (or is starting right now)
+        const isUpcoming = eventStart >= now && eventStart <= oneMinuteFromNow;
+        
+        if (isUpcoming && !notifiedEvents.has(event.id)) {
+          notifiedEvents.add(event.id);
+          triggerAlarm(event);
+        }
+      });
+    }
+
+    function triggerAlarm(event) {
+      playAlarmChime();
+      
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`ZenCal: ${event.title}`, {
+          body: `Starting now (${formatTimeShort(new Date(event.start))})\n${event.body || ''}`,
+          icon: 'favicon.svg'
+        });
+      }
+      
+      showToast(`⏰ Alarm: "${event.title}" is starting now!`);
+    }
+
+    async function testNotificationFlow() {
+      if ('Notification' in window) {
+        if (Notification.permission === 'default') {
+          const perm = await Notification.requestPermission();
+          if (perm !== 'granted') {
+            showToast('Notification permission denied.');
+            return;
+          }
+        }
+      }
+      
+      playAlarmChime();
+      
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification("ZenCal Notification Test", {
+          body: "Your secure calendar notifications are working perfectly!",
+          icon: 'favicon.svg'
+        });
+      }
+      showToast("🔔 Test Alarm Chime Played!");
+    }
+
+    // Schedule periodic background checks (every 15 seconds)
+    setInterval(checkUpcomingEvents, 15000);
+
+    // Track user input modification so map sync won't overwrite input fields mid-typing
+    const inputs = ['editor-event-title', 'editor-event-cat', 'editor-event-body'];
+    inputs.forEach(id => {
+      document.getElementById(id).addEventListener('input', (e) => {
+        e.target.dataset.modified = "true";
+      });
+    });
+
+    // Auto-login session recovery check
+    const savedUser = sessionStorage.getItem('zen_user');
+    const savedPass = sessionStorage.getItem('zen_pass');
+    if (savedUser && savedPass) {
+      login();
+    }
+  </script>
+</body>
+
+</html>
